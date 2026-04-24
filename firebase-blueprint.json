@@ -1,0 +1,76 @@
+{
+  "entities": {
+    "Mistake": {
+      "title": "Mistake Record",
+      "description": "A record of a student's mistake, including AI-generated variations.",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string",
+          "description": "The UID of the user who owns this record."
+        },
+        "originalText": {
+          "type": "string",
+          "description": "The OCR recognized text of the original mistake."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "Base64 encoded image or URL of the mistake."
+        },
+        "knowledgePoint": {
+          "type": "string",
+          "description": "The core knowledge point identified by AI."
+        },
+        "variations": {
+          "type": "array",
+          "description": "A list of 3 generated similar problems.",
+          "items": {
+            "$ref": "Variation"
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when the record was created."
+        }
+      },
+      "required": [
+        "userId",
+        "originalText",
+        "knowledgePoint",
+        "variations",
+        "createdAt"
+      ]
+    },
+    "Variation": {
+      "title": "Variation Problem",
+      "description": "A similar problem generated based on a knowledge point.",
+      "type": "object",
+      "properties": {
+        "question": {
+          "type": "string",
+          "description": "The problem text."
+        },
+        "answer": {
+          "type": "string",
+          "description": "The correct answer."
+        },
+        "analysis": {
+          "type": "string",
+          "description": "Explaining the logic and common pitfalls."
+        }
+      },
+      "required": [
+        "question",
+        "answer",
+        "analysis"
+      ]
+    }
+  },
+  "firestore": {
+    "/mistakes/{mistakeId}": {
+      "schema": "Mistake",
+      "description": "Collection of user mistakes."
+    }
+  }
+}

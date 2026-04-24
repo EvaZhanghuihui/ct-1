@@ -1,0 +1,52 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidMistake(data) {
+      return data.userId is string &&
+             data.userId == request.auth.uid &&
+             data.originalText is string && data.originalText.size() <= 5000 &&
+             data.knowledgePoint is string && data.knowledgePoint.size() <= 200 &&
+             data.variations is list && data.variations.size() == 3 &&
+             data.createdAt is timestamp;
+    }
+
+    match /mistakes/{mistakeId} {
+      allow create: if isSignedIn() &&
+                       isValidId(mistakeId) &&
+                       isValidMistake(request.resource.data) &&
+                       request.resource.data.createdAt == request.time;
+      
+      allow get: if isOwner(resource.data.userId);
+      
+      allow list: if isSignedIn() && 
+                    resource.data.userId == request.auth.uid;
+
+      allow delete: if isOwner(resource.data.userId);
+
+      // Updates are not generally needed for mistakes once generated, 
+      // but if we allow editing, we must protect userId and createdAt.
+      allow update: if isOwner(resource.data.userId) &&
+                       isValidMistake(request.resource.data) &&
+                       request.resource.data.userId == resource.data.userId &&
+                       request.resource.data.createdAt == resource.data.createdAt;
+    }
+  }
+}

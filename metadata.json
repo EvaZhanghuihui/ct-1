@@ -1,0 +1,8 @@
+{
+  "name": "错题举一反三打印机",
+  "description": "拍照识别错题，智能解析知识点并生成相似变式题，支持错题本管理与PDF导出打印。",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}
